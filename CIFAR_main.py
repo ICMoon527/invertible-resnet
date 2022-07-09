@@ -24,7 +24,7 @@ from models.conv_iResNet import conv_iResNet as iResNet
 from models.conv_iResNet import multiscale_conv_iResNet as multiscale_iResNet
 
 
-os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
+# os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
 # torch.backends.cudnn.enabled = False
 
 
