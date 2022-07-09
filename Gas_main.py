@@ -24,7 +24,7 @@ from models.conv_iResNet import conv_iResNet as iResNet
 from models.conv_iResNet import multiscale_conv_iResNet as multiscale_iResNet
 
 
-os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
+# os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
 # torch.backends.cudnn.enabled = False
 
 
@@ -68,7 +68,7 @@ parser.add_argument('-noActnorm', '--noActnorm', dest='noActnorm', action='store
                     help='disable actnorm, default uses actnorm')
 parser.add_argument('--nonlin', default="elu", type=str, choices=["relu", "elu", "sorting", "softplus"])
 parser.add_argument('--dataset', default='cifar10', type=str, help='dataset')
-parser.add_argument('--save_dir', default='./results/dens_est_cifar', type=str, help='directory to save results')
+parser.add_argument('--save_dir', default=None, type=str, help='directory to save results')
 parser.add_argument('--vis_port', default=8097, type=int, help="port for visdom")
 parser.add_argument('--vis_server', default="localhost", type=str, help="server for visdom")
 parser.add_argument('--log_every', default=10, type=int, help='logs every x iters')
@@ -157,13 +157,6 @@ def get_init_batch(dataloader, batch_size):
 
 def main():
     args = parser.parse_args()
-    # args.epochs = 1
-    # args.densityEstimation = True
-    # args.multiScale = True
-    # args.lr = 0.003
-    # args.weight_decay = 0.
-    # args.numSeriesTerms = 5
-    # args.warmup_epochs = 1
 
     if args.deterministic:  # 大概不用管
         print("MODEL NOT FULLY DETERMINISTIC")
@@ -179,6 +172,7 @@ def main():
         lambda x: x - 0.5
     ]  # 与compose的前项按顺序组合
     
+    # Data enhancement
     if args.dataset == 'mnist':
         assert args.densityEstimation, "Currently mnist is only supported for density estimation"
         mnist_transforms = [transforms.Pad(2, 0), transforms.ToTensor(), lambda x: x.repeat((3, 1, 1))]
