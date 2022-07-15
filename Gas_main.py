@@ -24,8 +24,7 @@ from models.conv_iResNet import conv_iResNet as iResNet
 from models.conv_iResNet import multiscale_conv_iResNet as multiscale_iResNet
 
 
-# os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
-# torch.backends.cudnn.enabled = False
+os.environ['CUDA_VISIBLE_DEVICES']='0'
 
 
 parser = argparse.ArgumentParser(description='Train i-ResNet/ResNet on Cifar')
@@ -158,7 +157,7 @@ def get_init_batch(dataloader, batch_size):
 def main():
     args = parser.parse_args()
 
-    if args.deterministic:  # 大概不用管
+    if args.deterministic:  # 就是方便复现
         print("MODEL NOT FULLY DETERMINISTIC")
         torch.manual_seed(1234)
         torch.cuda.manual_seed(1234)
