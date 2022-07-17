@@ -27,10 +27,10 @@ class injective_pad(nn.Module):
         self.pad_size = pad_size
         self.pad = nn.ZeroPad2d((0, 0, 0, pad_size))
 
-    def forward(self, x):
-        x = x.permute(0, 2, 1, 3)
-        x = self.pad(x)
-        return x.permute(0, 2, 1, 3)
+    def forward(self, x):  # (batch_size, 12, 16, 16) (batch_size, 3, 32, 32)
+        x = x.permute(0, 2, 1, 3)  # (batch_size, 16, 12, 16) (batch_size, 32, 3, 32)
+        x = self.pad(x)  # (batch_size, 32, 3+13, 32)
+        return x.permute(0, 2, 1, 3)  # (batch_size, 16, 32, 32)
 
     def inverse(self, x):
         return x[:, :x.size(1) - self.pad_size, :, :]
