@@ -242,7 +242,7 @@ def main():
         testloader = torch.utils.data.DataLoader(testset, batch_size=args.batch, shuffle=False, num_workers=2)
 
     def get_model(args):
-        if args.multiScale:
+        if args.multiScale:  # for Density Estimation
             model = multiscale_iResNet(in_shape,
                                        args.nBlocks, args.nStrides, args.nChannels,
                                        args.init_ds == 2,

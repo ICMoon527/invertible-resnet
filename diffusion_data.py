@@ -26,8 +26,8 @@ class DiffusionDataset(Dataset):
             pass
 
 if __name__ == '__main__':
-    # dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/'])
-    from torchvision.datasets.cifar import CIFAR10
-    dataset = CIFAR10(root='./data', train=True, download=True)
-    item = dataset.__getitem__(3)
-    print(item)
+    dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/'])
+    # from torchvision.datasets.cifar import CIFAR10
+    # dataset = CIFAR10(root='./data', train=True, download=True)
+    # item = dataset.__getitem__(3)
+    # print(item)

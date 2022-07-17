@@ -52,7 +52,7 @@ class Split(nn.Module):
 
 
 class squeeze(nn.Module):
-    def __init__(self, block_size):
+    def __init__(self, block_size):  # block_size in (1, 2)
         super(squeeze, self).__init__()
         self.block_size = block_size
         self.block_size_sq = block_size * block_size
@@ -70,16 +70,16 @@ class squeeze(nn.Module):
         output = output.permute(0, 3, 1, 2)
         return output.contiguous()
 
-    def forward(self, input):
-        output = input.permute(0, 2, 3, 1)
+    def forward(self, input):  # (3, 32, 32)
+        output = input.permute(0, 2, 3, 1)  # (32, 32, 3)
         (batch_size, s_height, s_width, s_depth) = output.size()
-        d_depth = s_depth * self.block_size_sq
-        d_height = int(s_height / self.block_size)
-        t_1 = output.split(self.block_size, 2)
-        stack = [t_t.contiguous().view(batch_size, d_height, d_depth) for t_t in t_1]
-        output = torch.stack(stack, 1)
-        output = output.permute(0, 2, 1, 3)
-        output = output.permute(0, 3, 1, 2)
+        d_depth = s_depth * self.block_size_sq  # 12
+        d_height = int(s_height / self.block_size)  # 16
+        t_1 = output.split(self.block_size, 2)  # (batch_size, 32, 2, 3)
+        stack = [t_t.contiguous().view(batch_size, d_height, d_depth) for t_t in t_1]  # (batch_size, 16, 12)
+        output = torch.stack(stack, 1)  # (batch_size, 16, 16, 12)
+        output = output.permute(0, 2, 1, 3)  # (batch_size, 16, 16, 12)
+        output = output.permute(0, 3, 1, 2)  # (batch_size, 12, 16, 16)
         return output.contiguous()
 
 
