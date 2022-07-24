@@ -58,7 +58,7 @@ class conv_iresnet_block(nn.Module):
                  stride=1, coeff=.97, input_nonlin=True,
                  actnorm=True, n_power_iter=5, nonlin="elu"):
         """
-        buid invertible bottleneck block
+        build invertible bottleneck block
         :param in_shape: shape of the input (channels, height, width)
         :param int_ch: dimension of intermediate layers
         :param stride: 1 if no downsample 2 if downsample
