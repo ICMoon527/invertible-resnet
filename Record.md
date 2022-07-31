@@ -5,9 +5,17 @@
 1. 知识蒸馏的方法去学习从单个源到多个源的扩散模式（老师，学生
 2. 依靠作差，让resnet学习两个时间中间的差，风向需要做余弦处理（归一，先尝试风向不变拟合
 3. 改进Injective Padding，输入一些额外的特征维度
+4. 数据增强：block的数量根据source和target中间间隔的时间步变化 以 保证 每个block拟合的都是单时间步
+5. padding用常量数据添加维度的同时，因为resnet的特性不会要求冗余的算力拟合(添加的维度拟合出来的是f(x)=0)
+6. 将x+f(x)改造成ax+f(x)，其中a为常数，lipschiz约束变成<a，使更容易找到f(x)
+
+
+## Working Record
+1. 建立自己数据的dataset √
+2. 测试可视化代码
+3. 用自己数据跑通分类代码
 
 ## Reading Record
-
 
 ### Invertible Residual Networks
 
