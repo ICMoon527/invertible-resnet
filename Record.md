@@ -8,12 +8,15 @@
 4. 数据增强：block的数量根据source和target中间间隔的时间步变化 以 保证 每个block拟合的都是单时间步
 5. padding用常量数据添加维度的同时，因为resnet的特性不会要求冗余的算力拟合(添加的维度拟合出来的是f(x)=0)
 6. 将x+f(x)改造成ax+f(x)，其中a为常数，lipschiz约束变成<a，使更容易找到f(x)
+7. 讨论在动力学系统中，在参数扰动下的稳定性，即加入扰动后模型能否恢复到原来的样子，f(x)+δx -> f(x)，以及输入扰动的稳定性f(x+δx) -> f(x)
 
 
 ## Working Record
 1. 建立自己数据的dataset √
-2. 测试可视化代码
+2. 测试可视化代码 √ 检验Density Estimation可视化情况
 3. 用自己数据跑通分类代码
+4. 用自己的数据跑Density Estimation的代码
+5. revertible理论
 
 ## Reading Record
 

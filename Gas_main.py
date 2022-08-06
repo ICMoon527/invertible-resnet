@@ -24,8 +24,6 @@ from models.conv_iResNet import conv_iResNet as iResNet
 from models.conv_iResNet import multiscale_conv_iResNet as multiscale_iResNet
 
 
-os.environ['CUDA_VISIBLE_DEVICES']='0'
-
 
 parser = argparse.ArgumentParser(description='Train i-ResNet/ResNet on Cifar')
 parser.add_argument('-densityEstimation', '--densityEstimation', dest='densityEstimation',
@@ -157,6 +155,7 @@ def get_init_batch(dataloader, batch_size):
 def main():
     args = parser.parse_args()
 
+    os.environ['CUDA_VISIBLE_DEVICES']='0'
     args.nBlocks = [7, 7, 7]
     args.nStrides = [1, 2, 2]
     args.nChannels = [32, 64, 128]
@@ -242,11 +241,11 @@ def main():
 
 
     # setup logging with visdom
-    # viz = visdom.Visdom(port=args.vis_port, server="http://" + args.vis_server, 
-    #                     http_proxy_host='10.79.26.120', http_proxy_port='9876',
-    #                     use_incoming_socket=True)
-    # assert viz.check_connection(), "Could not make visdom"
-    viz = None
+    viz = visdom.Visdom(port=args.vis_port, server="http://" + args.vis_server, 
+                        # http_proxy_host='10.79.26.120', http_proxy_port='9876',
+                        use_incoming_socket=True)
+    assert viz.check_connection(), "Could not make visdom"
+    # viz = None
 
     if args.deterministic:
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch,
