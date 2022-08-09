@@ -13,7 +13,7 @@
 
 ## Working Record
 1. 建立自己数据的dataset √
-2. 测试可视化代码 √ 检验Density Estimation可视化情况
+2. 测试可视化代码 √ 检验Density Estimation可视化情况 √
 3. 用自己数据跑通分类代码
 4. 用自己的数据跑Density Estimation的代码
 5. revertible理论

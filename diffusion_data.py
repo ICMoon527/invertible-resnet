@@ -1,3 +1,4 @@
+from audioop import minmax
 from fileinput import filename
 from posixpath import dirname
 from typing import Any, Tuple
@@ -60,6 +61,7 @@ class DiffusionDataset(Dataset):
             self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
             print('source_data_shape: ', self.data.shape)
             print('target_length: ', len(self.targets))
+            # self.MinMax()
                     
                     
         else:  # test
@@ -126,8 +128,8 @@ class DiffusionDataset(Dataset):
 
 
 if __name__ == '__main__':
-    dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/'], True)
-    # dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/', '1/', '2/', '3/', '4/'], True)
+    # dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/'], True)
+    dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/', '1/', '2/', '3/', '4/'], True)
 
     # from torchvision.datasets.cifar import CIFAR10
     # dataset = CIFAR10(root='./data', train=True, download=True)

@@ -155,22 +155,27 @@ def get_init_batch(dataloader, batch_size):
 def main():
     args = parser.parse_args()
 
-    os.environ['CUDA_VISIBLE_DEVICES']='0'
-    args.nBlocks = [7, 7, 7]
-    args.nStrides = [1, 2, 2]
-    args.nChannels = [32, 64, 128]
-    args.coeff = 0.9
-    args.batch = 512
-    args.dataset = 'cifar10'
-    args.init_ds = 1
-    args.inj_pad = 13
-    args.powerIterSpectralNorm = 1
-    args.save_dir = './results/TestRunning'
-    args.nonlin = 'elu'
-    args.optimizer = 'sgd'
-    args.vis_server = '127.0.0.1'
-    args.vis_port = 8097
-    args.epochs = 200
+    # os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
+    # args.nBlocks = [16, 16, 16]
+    # args.nStrides = [1, 2, 2]
+    # args.nChannels = [512, 512, 512]
+    # args.coeff = 0.9
+    # args.densityEstimation = True
+    # args.multiScale = True
+    # args.lr = 0.003
+    # args.numSeriesTerms = 5
+    # args.batch = 64
+    # args.dataset = 'cifar10'
+    # args.warmup_epochs = 1
+    # args.init_ds = 1
+    # args.inj_pad = 13
+    # args.powerIterSpectralNorm = 1
+    # args.save_dir = './results/TestRunning'
+    # args.nonlin = 'elu'
+    # args.optimizer = 'sgd'
+    # args.vis_server = '127.0.0.1'
+    # args.vis_port = 8097
+    # args.epochs = 200
 
     if args.deterministic:  # 就是方便复现
         print("MODEL NOT FULLY DETERMINISTIC")
