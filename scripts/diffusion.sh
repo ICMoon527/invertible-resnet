@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,1 python Gas_main.py --epochs 200 --nBlocks 16 16 16 --nStrides 1 2 2 --nChannels 512 512 512 --coeff 0.9 -densityEstimation -multiScale --lr 0.003 --weight_decay 0. --numSeriesTerms 5 --dataset cifar10 --batch 64 --warmup_epochs 1 --save_dir ./results/dens_est_cifar --vis_server localhost --vis_port 8097

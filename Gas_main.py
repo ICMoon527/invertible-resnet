@@ -155,27 +155,28 @@ def get_init_batch(dataloader, batch_size):
 def main():
     args = parser.parse_args()
 
-    # os.environ['CUDA_VISIBLE_DEVICES']='2, 3'
-    # args.nBlocks = [16, 16, 16]
-    # args.nStrides = [1, 2, 2]
-    # args.nChannels = [512, 512, 512]
-    # args.coeff = 0.9
-    # args.densityEstimation = True
-    # args.multiScale = True
-    # args.lr = 0.003
-    # args.numSeriesTerms = 5
-    # args.batch = 64
-    # args.dataset = 'cifar10'
-    # args.warmup_epochs = 1
-    # args.init_ds = 1
-    # args.inj_pad = 13
-    # args.powerIterSpectralNorm = 1
-    # args.save_dir = './results/TestRunning'
-    # args.nonlin = 'elu'
-    # args.optimizer = 'sgd'
-    # args.vis_server = '127.0.0.1'
-    # args.vis_port = 8097
-    # args.epochs = 200
+    os.environ['CUDA_VISIBLE_DEVICES']='0, 1'
+    args.nBlocks = [16, 16, 16]
+    args.nStrides = [1, 2, 2]
+    args.nChannels = [512, 512, 512]
+    args.coeff = 0.9
+    args.densityEstimation = True
+    args.multiScale = True
+    args.lr = 0.003
+    args.weight_decay = 0.
+    args.numSeriesTerms = 5
+    args.batch = 64
+    args.dataset = 'diffusion'
+    args.warmup_epochs = 1
+    args.init_ds = 2
+    args.inj_pad = 0
+    args.powerIterSpectralNorm = 5
+    args.save_dir = './results/TestRunning'
+    args.nonlin = 'elu'
+    args.optimizer = 'adamax'
+    args.vis_server = '127.0.0.1'
+    args.vis_port = 8097
+    args.epochs = 200
 
     if args.deterministic:  # 就是方便复现
         print("MODEL NOT FULLY DETERMINISTIC")
@@ -208,7 +209,7 @@ def main():
             train_chain = [transforms.Pad(4, padding_mode="symmetric"),
                            transforms.RandomCrop(32),
                            transforms.ToTensor()]
-        else:
+        else:  # 先保留与cifar10相同的操作
             train_chain = [transforms.Pad(4, padding_mode="symmetric"),
                            transforms.RandomCrop(32),
                            transforms.RandomHorizontalFlip(),
@@ -219,7 +220,7 @@ def main():
             transform_train = transforms.Compose(train_chain + dens_est_chain)
             transform_test = transforms.Compose(test_chain + dens_est_chain)
         else:
-            clf_chain = [transforms.Normalize(mean[args.dataset], std[args.dataset])]
+            clf_chain = [transforms.Normalize(mean[args.dataset], std[args.dataset])]  # 只有classify可以normalize么
             transform_train = transforms.Compose(train_chain + clf_chain)
             transform_test = transforms.Compose(test_chain + clf_chain)
 
@@ -250,7 +251,6 @@ def main():
                         # http_proxy_host='10.79.26.120', http_proxy_port='9876',
                         use_incoming_socket=True)
     assert viz.check_connection(), "Could not make visdom"
-    # viz = None
 
     if args.deterministic:
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch,

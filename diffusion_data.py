@@ -9,7 +9,7 @@ import os
 import math
 from typing import Any, Callable, Optional, Tuple
 
-DIFFUSION_MIN_MAX = (-1.0, 44.95)
+DIFFUSION_MIN_MAX = (0.0, 0.16199602072082317)
 
 class DiffusionDataset(Dataset):
 
@@ -19,7 +19,8 @@ class DiffusionDataset(Dataset):
                 train: bool=True,
                 transform: Optional[Callable] = None,
                 target_transform: Optional[Callable] = None,
-                extract_shape = (32, 32)
+                extract_shape = (32, 32),
+                density_estimation = True
                 ) -> None:
         super(DiffusionDataset, self).__init__()
 
@@ -42,6 +43,8 @@ class DiffusionDataset(Dataset):
                 npy_files = os.listdir(root + dir)
 
                 for npy_file in npy_files:  # 0_180.npy
+                    print('Now processing {}.npy'.format(npy_file))
+
                     my_data = np.fromfile(root+dir+'/'+npy_file, dtype='float').reshape((300,568,693))
                     my_data = self.extractMatrix3D(my_data, self.extract_shape)  # (300,568,693) -> (300, 32, 32) for example
                     
@@ -51,43 +54,38 @@ class DiffusionDataset(Dataset):
                     wind_direction_matrix = np.ones_like(my_data) * wind_direction  # (300, 32, 32)
 
                     my_data = np.stack([my_data, wind_direction_matrix, self.geo_data], axis=1)  # stack other feature to raw data (batch, channel, height , width)
-                    print('Now processing {}.npy'.format(npy_file))
+                    
+                    # for Forward and Reconstrustion
+                    if density_estimation:
+                        my_target = my_data[1:, :, :, :]
+                        my_data = my_data[0:-1, :, :, :]
+                        self.targets.append(my_target)
+
                     self.data.append(my_data)
                     
-                    data_class = int(npy_file.split('_')[0])
-                    self.targets.extend((np.ones(shape=my_data.shape[0], dtype=np.int)*data_class).tolist())
+                    # # for classification
+                    # data_class = int(npy_file.split('_')[0])
+                    # self.targets.extend((np.ones(shape=my_data.shape[0], dtype=np.int)*data_class).tolist())
 
             self.data = np.vstack(self.data)
             self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
+            self.targets = np.vstack(self.targets)
+            self.targets = self.targets.transpose((0, 2, 3, 1))
+
+            # min max scale for data and target
+            temp = self.data[:, :, :, 0]
+            self.data[:, :, :, 0] = (temp-np.min(temp)) / (np.max(temp)-np.min(temp))
+            temp = self.targets[:, :, :, 0]
+            self.targets[:, :, :, 0] = (temp-np.min(temp)) / (np.max(temp)-np.min(temp))
+
             print('source_data_shape: ', self.data.shape)
             print('target_length: ', len(self.targets))
-            # self.MinMax()
+            self.MinMax(self.data[:, :, :, 0])
+            self.MeanStd(self.data[:, :, :, 0])
                     
                     
         else:  # test
-            assert len(dir_name)!=0, 'No File List.'
-            for dir in dir_name:
-                npy_files = os.listdir(root + dir)
-
-                for npy_file in npy_files:  # 0_180.npy
-                    my_data = np.fromfile(root+dir+'/'+npy_file, dtype='float').reshape((300,568,693))
-                    my_data = self.extractMatrix3D(my_data, self.extract_shape)  # (300,568,693) -> (300, 32, 32) for example
-                    
-                    wind_direction = int(npy_file.split('.')[0][2:])  # degree
-                    wind_direction = wind_direction / 180 * math.pi  # to radius
-                    wind_direction = math.cos(wind_direction)
-                    wind_direction_matrix = np.ones_like(my_data) * wind_direction  # (300, 32, 32)
-
-                    my_data = np.stack([my_data, wind_direction_matrix, self.geo_data], axis=1)  # stack other feature to raw data (batch, channel, height , width)
-                    self.data.append(my_data)
-                    
-                    data_class = int(npy_file.split('_')[0])
-                    self.targets.extend((np.ones(shape=my_data.shape[0], dtype=np.int)*data_class).tolist())
-
-                self.data = np.vstack(self.data)
-            self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
-            print('source_data_shape: ', self.data.shape)
-            print('target_length: ', len(self.targets))
+            pass
 
     def __getitem__(self, index) -> Tuple[Any, Any]:
         data, target = self.data[index], self.targets[index]
@@ -97,14 +95,23 @@ class DiffusionDataset(Dataset):
         if self.target_transform is not None:
             target = self.target_transform(target)
 
+        # # scale to [0, 1]
+        # data = (data-DIFFUSION_MIN_MAX[0]) / (DIFFUSION_MIN_MAX[1]-DIFFUSION_MIN_MAX[0])
+        # target = (target-DIFFUSION_MIN_MAX[0]) / (DIFFUSION_MIN_MAX[1]-DIFFUSION_MIN_MAX[0])
+
         return data, target
 
     def __len__(self) -> int:
         return len(self.data)
 
-    def MinMax(self):
-        print('MIN: {}, MAX: {}'.format(np.min(self.data), np.max(self.data)))
-        return np.min(self.data), np.max(self.data)
+    def MinMax(self, array):
+        print('MIN: {}, MAX: {}'.format(np.min(array), np.max(array)))
+        return np.min(array), np.max(array)
+
+    
+    def MeanStd(self, array):
+        print('MEAN: {}, STD: {}'.format(np.mean(array), np.std(array)))
+        return np.mean(array), np.std(array)
 
 
     def extractMatrix2D(self, array, shape):
