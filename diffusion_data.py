@@ -8,8 +8,11 @@ import numpy as np
 import os
 import math
 from typing import Any, Callable, Optional, Tuple
+from PIL import Image
+import torch
 
 DIFFUSION_MIN_MAX = (0.0, 0.16199602072082317)
+DIFFUSION_MEAN_STD = (0.007952842710335403, 0.049901370936519106)
 
 class DiffusionDataset(Dataset):
 
@@ -79,27 +82,72 @@ class DiffusionDataset(Dataset):
             self.targets[:, :, :, 0] = (temp-np.min(temp)) / (np.max(temp)-np.min(temp))
 
             print('source_data_shape: ', self.data.shape)
-            print('target_length: ', len(self.targets))
+            print('target_shape: ', self.targets.shape)
             self.MinMax(self.data[:, :, :, 0])
             self.MeanStd(self.data[:, :, :, 0])
                     
                     
         else:  # test
-            pass
+            assert len(dir_name)!=0, 'No File List.'
+            for dir in dir_name:
+                npy_files = os.listdir(root + dir)
+
+                for npy_file in npy_files:  # 0_180.npy
+                    print('Now processing {}.npy'.format(npy_file))
+
+                    my_data = np.fromfile(root+dir+'/'+npy_file, dtype='float').reshape((300,568,693))
+                    my_data = self.extractMatrix3D(my_data, self.extract_shape)  # (300,568,693) -> (300, 32, 32) for example
+                    
+                    wind_direction = int(npy_file.split('.')[0][2:])  # degree
+                    wind_direction = wind_direction / 180 * math.pi  # to radius
+                    wind_direction = math.cos(wind_direction)
+                    wind_direction_matrix = np.ones_like(my_data) * wind_direction  # (300, 32, 32)
+
+                    my_data = np.stack([my_data, wind_direction_matrix, self.geo_data], axis=1)  # stack other feature to raw data (batch, channel, height , width)
+                    
+                    # for Forward and Reconstrustion
+                    if density_estimation:
+                        my_target = my_data[1:, :, :, :]
+                        my_data = my_data[0:-1, :, :, :]
+                        self.targets.append(my_target)
+
+                    self.data.append(my_data)
+                    
+                    # # for classification
+                    # data_class = int(npy_file.split('_')[0])
+                    # self.targets.extend((np.ones(shape=my_data.shape[0], dtype=np.int)*data_class).tolist())
+
+            self.data = np.vstack(self.data)
+            self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
+            self.targets = np.vstack(self.targets)
+            self.targets = self.targets.transpose((0, 2, 3, 1))
+
+            # min max scale for data and target
+            temp = self.data[:, :, :, 0]
+            self.data[:, :, :, 0] = (temp-np.min(temp)) / (np.max(temp)-np.min(temp))
+            temp = self.targets[:, :, :, 0]
+            self.targets[:, :, :, 0] = (temp-np.min(temp)) / (np.max(temp)-np.min(temp))
+
+            print('source_data_shape: ', self.data.shape)
+            print('target_shape: ', self.targets.shape)
+            self.MinMax(self.data[:, :, :, 0])
+            self.MeanStd(self.data[:, :, :, 0])
+
+            # self.__getitem__(0)
 
     def __getitem__(self, index) -> Tuple[Any, Any]:
-        data, target = self.data[index], self.targets[index]
+        data, target = self.data[index], self.targets[index]  # (32, 32, 3)
+        # data, target = Image.fromarray(data), Image.fromarray(target)
 
         if self.transform is not None:
             data = self.transform(data)
         if self.target_transform is not None:
             target = self.target_transform(target)
 
-        # # scale to [0, 1]
-        # data = (data-DIFFUSION_MIN_MAX[0]) / (DIFFUSION_MIN_MAX[1]-DIFFUSION_MIN_MAX[0])
-        # target = (target-DIFFUSION_MIN_MAX[0]) / (DIFFUSION_MIN_MAX[1]-DIFFUSION_MIN_MAX[0])
-
-        return data, target
+        # RuntimeError: expected scalar type Double but found Float  √
+        data, target = data.float(), target.float()  # float64 to float32
+        
+        return data, target  # (3, 32, 32)
 
     def __len__(self) -> int:
         return len(self.data)

@@ -11,6 +11,7 @@ from torch.autograd import Variable
 import numpy as np
 import torchvision
 import torchvision.transforms as transforms
+import diffusion_data
 import visdom
 import os
 import sys
@@ -190,60 +191,31 @@ def main():
         lambda x: (255. * x) + torch.zeros_like(x).uniform_(0., 1.),
         lambda x: x / 256.,
         lambda x: x - 0.5
-    ]  # 与compose的前项按顺序组合
+    ]  # 与compose的前项按顺序组合，将之前[0, 1]的数据加入随机噪声后，再scale到[-0.5, 0.5]
     
     # Data enhancement
-    if args.dataset == 'mnist':
-        assert args.densityEstimation, "Currently mnist is only supported for density estimation"
-        mnist_transforms = [transforms.Pad(2, 0), transforms.ToTensor(), lambda x: x.repeat((3, 1, 1))]
-        transform_train_mnist = transforms.Compose(mnist_transforms + dens_est_chain)
-        transform_test_mnist = transforms.Compose(mnist_transforms + dens_est_chain)
-        trainset = torchvision.datasets.MNIST(
-            root='./data', train=True, download=True, transform=transform_train_mnist)
-        testset = torchvision.datasets.MNIST(
-            root='./data', train=False, download=False, transform=transform_test_mnist)
-        args.nClasses = 10
-        in_shape = (3, 32, 32)
+    train_chain = [transforms.Pad(4, padding_mode="symmetric"),
+                    transforms.RandomCrop(32),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.ToTensor()]
+
+    test_chain = [transforms.ToTensor()]
+    if args.densityEstimation:
+        transform_train = transforms.Compose(test_chain + dens_est_chain)
+        transform_test = transforms.Compose(test_chain + dens_est_chain)
     else:
-        if args.dataset == 'svhn':
-            train_chain = [transforms.Pad(4, padding_mode="symmetric"),
-                           transforms.RandomCrop(32),
-                           transforms.ToTensor()]
-        else:  # 先保留与cifar10相同的操作
-            train_chain = [transforms.Pad(4, padding_mode="symmetric"),
-                           transforms.RandomCrop(32),
-                           transforms.RandomHorizontalFlip(),
-                           transforms.ToTensor()]
-
-        test_chain = [transforms.ToTensor()]
-        if args.densityEstimation:
-            transform_train = transforms.Compose(train_chain + dens_est_chain)
-            transform_test = transforms.Compose(test_chain + dens_est_chain)
-        else:
-            clf_chain = [transforms.Normalize(mean[args.dataset], std[args.dataset])]  # 只有classify可以normalize么
-            transform_train = transforms.Compose(train_chain + clf_chain)
-            transform_test = transforms.Compose(test_chain + clf_chain)
+        clf_chain = [transforms.Normalize(mean[args.dataset], std[args.dataset])]  # 只有classify可以normalize么
+        transform_train = transforms.Compose(train_chain + clf_chain)
+        transform_test = transforms.Compose(test_chain + clf_chain)
 
 
-        if args.dataset == 'cifar10':
-            trainset = torchvision.datasets.CIFAR10(
-                root='./data', train=True, download=True, transform=transform_train)
-            testset = torchvision.datasets.CIFAR10(
-                root='./data', train=False, download=True, transform=transform_test)
-            args.nClasses = 10
-        elif args.dataset == 'cifar100':
-            trainset = torchvision.datasets.CIFAR100(
-                root='./data', train=True, download=True, transform=transform_train)
-            testset = torchvision.datasets.CIFAR100(
-                root='./data', train=False, download=True, transform=transform_test)
-            args.nClasses = 100
-        elif args.dataset == 'svhn':
-            trainset = torchvision.datasets.SVHN(
-                root='./data', split='train', download=True, transform=transform_train)
-            testset = torchvision.datasets.SVHN(
-                root='./data', split='test', download=True, transform=transform_test)
-            args.nClasses = 10
-        in_shape = (3, 32, 32)
+    trainset = diffusion_data.DiffusionDataset(
+        '/data/langjunwei/taizhou/data/', ['0/'], True, transform=transform_train, target_transform=transform_train)
+    testset = diffusion_data.DiffusionDataset(
+        '/data/langjunwei/taizhou/data/', ['0/'], False, transform=transform_test, target_transform=transform_test)
+    args.nClasses = 5
+
+    in_shape = (3, 32, 32)
 
 
     # setup logging with visdom
@@ -290,7 +262,7 @@ def main():
         return model
 
     model = get_model(args)
-    # init actnrom parameters
+    # init actnorm parameters
     init_batch = get_init_batch(trainloader, args.init_batch)
     print("initializing actnorm parameters...")
     with torch.no_grad():

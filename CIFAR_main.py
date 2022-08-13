@@ -157,13 +157,29 @@ def get_init_batch(dataloader, batch_size):
 
 def main():
     args = parser.parse_args()
-    # args.epochs = 1
-    # args.densityEstimation = True
-    # args.multiScale = True
-    # args.lr = 0.003
-    # args.weight_decay = 0.
-    # args.numSeriesTerms = 5
-    # args.warmup_epochs = 1
+    
+    os.environ['CUDA_VISIBLE_DEVICES']='0, 1'
+    args.nBlocks = [16, 16, 16]
+    args.nStrides = [1, 2, 2]
+    args.nChannels = [512, 512, 512]
+    args.coeff = 0.9
+    args.densityEstimation = True
+    args.multiScale = True
+    args.lr = 0.003
+    args.weight_decay = 0.
+    args.numSeriesTerms = 5
+    args.batch = 64
+    args.dataset = 'cifar10'
+    args.warmup_epochs = 1
+    args.init_ds = 2
+    args.inj_pad = 0
+    args.powerIterSpectralNorm = 5
+    args.save_dir = './results/TestRunning'
+    args.nonlin = 'elu'
+    args.optimizer = 'adamax'
+    args.vis_server = '127.0.0.1'
+    args.vis_port = 8097
+    args.epochs = 200
 
     if args.deterministic:  # 大概不用管
         print("MODEL NOT FULLY DETERMINISTIC")
