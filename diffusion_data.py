@@ -146,8 +146,9 @@ class DiffusionDataset(Dataset):
 
         # RuntimeError: expected scalar type Double but found Float  √
         data, target = data.float(), target.float()  # float64 to float32
+        # print(data.shape)
         
-        return data, target  # (3, 32, 32)
+        return data, target  # (3, 32, 32) by torch, but (32, 32, 3) by numpy
 
     def __len__(self) -> int:
         return len(self.data)
@@ -185,6 +186,7 @@ class DiffusionDataset(Dataset):
 if __name__ == '__main__':
     # dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/'], True)
     dataset = DiffusionDataset('/data/langjunwei/taizhou/data/', ['0/', '1/', '2/', '3/', '4/'], True)
+    dataset.__getitem__(0)
 
     # from torchvision.datasets.cifar import CIFAR10
     # dataset = CIFAR10(root='./data', train=True, download=True)

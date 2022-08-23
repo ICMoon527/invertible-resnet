@@ -249,10 +249,11 @@ class multiscale_conv_iResNet(nn.Module):
             self.inj_pad = None
 
         if init_squeeze:
-            in_shape = downsample_shape(in_shape)
+            in_shape = downsample_shape(in_shape)  # (12, 16, 16) torch tensor
         in_shape = (in_shape[0] + inj_pad, in_shape[1], in_shape[2])  # adjust channels
+        # print("in_shape: ", in_shape)
 
-        self.nBlocks = nBlocks
+        self.nBlocks = nBlocks  # [16, 16, 16]
         self.density_estimation = density_estimation
         self.nClasses = nClasses
         # parameters for trace estimation
