@@ -285,7 +285,7 @@ class multiscale_conv_iResNet(nn.Module):
         return self.in_shapes
 
     def _make_stack(self, in_shape, nSteps, nStrides, nChannels, n_terms,
-                    n_samples, coeff, actnorm, n_power_iter, nonlin):
+                    n_samples, coeff, actnorm, n_power_iter, nonlin):  # nSteps = nBlocks [16, 16, 16]
         blocks = nn.ModuleList()
         n_blocks = len(nSteps)
         in_shapes = [in_shape]
