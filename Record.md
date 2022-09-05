@@ -19,6 +19,7 @@
 4. 用自己的数据跑Density Estimation的代码
 5. revertible理论
 
+
 ## Reading Record
 
 ### Invertible Residual Networks
@@ -32,3 +33,6 @@ Forward
 3. 接下来看看stack是怎么创建的：由很多个block堆叠而来，每个block中，第一次不做squeeze操作，后两次做squeeze。split是抢两次做，最后一次不做,将形如(12, 16, 16)的张量拆成两个(6, 16, 16)的。
 4. |detJF(x)|是用来评估模型密度估计好坏的。
 5. 
+
+
+## Requirments
